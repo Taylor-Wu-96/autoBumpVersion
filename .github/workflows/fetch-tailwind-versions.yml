@@ -1,0 +1,28 @@
+name: Fetch Tailwind Versions
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    outputs:
+      versions:
+        description: "Available Tailwind versions"
+        value: ${{ jobs.fetch-versions.outputs.versions }}
+
+jobs:
+  fetch-versions:
+    runs-on: ubuntu-latest
+    outputs:
+      versions: ${{ steps.set-versions.outputs.versions }}
+    steps:
+      - name: Fetch Tailwind versions
+        id: set-versions
+        run: |
+          VERSIONS=$(npm view tailwindcss versions --json | jq -r '.[]' | sort -V -r | head -n 10)
+          echo "versions<<EOF" >> $GITHUB_OUTPUT
+          echo "$VERSIONS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Output versions
+        run: |
+          echo "Available versions:"
+          echo "${{ steps.set-versions.outputs.versions }}" 

@@ -1,0 +1,54 @@
+name: Select and Bump Tailwind Version
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'New Tailwind CSS version to upgrade to'
+        required: true
+        type: string
+        default: 'latest'
+
+jobs:
+  fetch-versions:
+    uses: ./.github/workflows/fetch-tailwind-versions.yml
+    secrets: inherit
+
+  bump-version:
+    needs: fetch-versions
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Update Tailwind CSS version
+        run: |
+          if [ "${{ github.event.inputs.version }}" = "latest" ]; then
+            npm install tailwindcss@latest
+          else
+            npm install tailwindcss@${{ github.event.inputs.version }}
+          fi
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "chore: bump Tailwind CSS to version ${{ github.event.inputs.version }}"
+          title: "chore: bump Tailwind CSS to version ${{ github.event.inputs.version }}"
+          body: |
+            This PR automatically bumps the Tailwind CSS version to ${{ github.event.inputs.version }}.
+            
+            Changes made:
+            - Updated Tailwind CSS package version
+            - Updated package-lock.json
+
+      - name: Output PR URL
+        run: echo "Pull Request created at ${{ steps.create-pull-request.outputs.pull-request-url }}" 
