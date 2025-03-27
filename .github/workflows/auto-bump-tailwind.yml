@@ -15,6 +15,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -36,6 +38,7 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "chore: bump Tailwind CSS to version ${{ github.event.inputs.version }}"
           title: "chore: bump Tailwind CSS to version ${{ github.event.inputs.version }}"
           body: |
@@ -46,4 +49,8 @@ jobs:
             - Updated package-lock.json
 
       - name: Output PR URL
-        run: echo "Pull Request created at ${{ steps.create-pull-request.outputs.pull-request-url }}" 
+        run: echo "Pull Request created at ${{ steps.create-pull-request.outputs.pull-request-url }}"
+
+permissions:
+  contents: write
+  pull-requests: write 
