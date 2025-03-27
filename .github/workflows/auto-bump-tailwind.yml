@@ -36,6 +36,7 @@ jobs:
           fi
 
       - name: Create Pull Request
+        id: create-pull-request
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -49,7 +50,10 @@ jobs:
             - Updated package-lock.json
 
       - name: Output PR URL
-        run: echo "Pull Request created at ${{ steps.create-pull-request.outputs.pull-request-url }}"
+        run: |
+          PR_NUMBER=${{ steps.create-pull-request.outputs.pull-request-number }}
+          PR_URL="https://github.com/${{ github.repository }}/pull/$PR_NUMBER"
+          echo "Pull Request created at $PR_URL"
 
 permissions:
   contents: write
