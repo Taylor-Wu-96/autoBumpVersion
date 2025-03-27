@@ -1,10 +1,20 @@
-name: Auto Bump Tailwind Version
+name: Auto Bump DS Version
 
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: 'New Tailwind CSS version to upgrade to'
+      design-system-icons:
+        description: 'New Design System Icons version to upgrade to'
+        required: true
+        type: string
+        default: 'latest'
+      design-system-tailwindcss:
+        description: 'New Design System Tailwind CSS version to upgrade to'
+        required: true
+        type: string
+        default: 'latest'
+      design-system-tokens:
+        description: 'New Design System Tokens version to upgrade to'
         required: true
         type: string
         default: 'latest'
@@ -29,10 +39,10 @@ jobs:
 
       - name: Update Tailwind CSS version
         run: |
-          if [ "${{ github.event.inputs.version }}" = "latest" ]; then
+          if [ "${{ github.event.inputs.design-system-tailwindcss }}" = "latest" ]; then
             npm install tailwindcss@latest
           else
-            npm install tailwindcss@${{ github.event.inputs.version }}
+            npm install tailwindcss@${{ github.event.inputs.design-system-tailwindcss }}
           fi
 
       - name: Create Pull Request
@@ -40,10 +50,10 @@ jobs:
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "chore: bump Tailwind CSS to version ${{ github.event.inputs.version }}"
-          title: "chore: bump Tailwind CSS to version ${{ github.event.inputs.version }}"
+          commit-message: "chore: bump Tailwind CSS to version ${{ github.event.inputs.design-system-tailwindcss }}"
+          title: "chore: bump Tailwind CSS to version ${{ github.event.inputs.design-system-tailwindcss }}"
           body: |
-            This PR automatically bumps the Tailwind CSS version to ${{ github.event.inputs.version }}.
+            This PR automatically bumps the Tailwind CSS version to ${{ github.event.inputs.design-system-tailwindcss }}.
             
             Changes made:
             - Updated Tailwind CSS package version
@@ -54,6 +64,13 @@ jobs:
           PR_NUMBER=${{ steps.create-pull-request.outputs.pull-request-number }}
           PR_URL="https://github.com/${{ github.repository }}/pull/$PR_NUMBER"
           echo "Pull Request created at $PR_URL"
+
+      - name: Enable Auto-merge
+        if: steps.create-pull-request.outputs.pull-request-number
+        run: |
+          gh pr merge ${{ steps.create-pull-request.outputs.pull-request-number }} --auto --merge
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 permissions:
   contents: write
